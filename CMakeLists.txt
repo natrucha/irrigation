@@ -1,9 +1,6 @@
 # Automated home irrigation based on weather data provided by CIMIS weather stations (https://cimis.water.ca.gov/Default.aspx).
 # Copyright (C) 2024  Natalie C. Pueyo Svoboda
 
-# create a build folder in the irrigation project folder to make it easy to change
-# to run on terminal, use >cmake --build .
-
 # Set the minimum required version of CMake 
 cmake_minimum_required(VERSION 3.10)
 
@@ -27,7 +24,6 @@ add_definitions(-DCURL_STATICLIB)
 add_executable(Irrigation irrigation.c)
 
 list(APPEND CMAKE_PREFIX_PATH "/usr/local/lib/cmake/jansson/")
-
 message("CMAKE_PREFIX_PATH = ${CMAKE_PREFIX_PATH}")
 
 # if adding more packages, rememeber to make and install even after cmake build
