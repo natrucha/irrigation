@@ -131,10 +131,12 @@ error:
     return NULL;
 }
 
-int main(void){
+int main(){
     char *cimis_station = CIMIS_STATION;
     char *cimis_app_key = APP_KEY;
     // printf("Example of using CMake input file, \n     Irrigation Major Version %d \n     Irrigation Minor Version %d \n", Irrigation_VERSION_MAJOR, Irrigation_VERSION_MINOR);
+
+    const char *eto_value, *precip_value; // values adding up the total precipitation and ETo over specified range
 
     time_t date_today, date_start;
     char today_buffer[80], start_buffer[80];
@@ -142,6 +144,12 @@ int main(void){
     struct tm tm_out_today, tm_out_start;
 
     int num_days = 7; // how many days of data do we want to use?
+
+    // obtain the Eto values for each day requested to CIMIS
+    json_t *Data, *Providers, *get_records, *Records;
+
+    float total_precipitation = 0.0; 
+    float total_eto = 0.0;
 
     size_t i;
     char *text;
@@ -230,10 +238,7 @@ int main(void){
         
     }
    
-    // obtain the Eto values for each day requested to CIMIS
-    json_t *Data, *Providers, *get_records, *Records;
-
-    float total_precipitation, total_eto = 0.0;
+    
 
     Data = json_object_get(root, "Data");
     if (!json_is_object(Data)) {
@@ -283,9 +288,9 @@ int main(void){
         printf("The number of days being analyzed is %lu days\n", json_array_size(Records));
     }
 
-    for (i = 0; i < json_array_size(Records); i++) {
+    for (int i = 0; i < json_array_size(Records); i++) {
         json_t *get_daydata, *DayAsceEto, *EToValue, *DayPrecip, *PrecipValue;
-        const char *eto_value, *precip_value;
+
 
         // Records is an array with an Eto value for each day requested in the url
         get_daydata = json_array_get(Records, i);
@@ -371,59 +376,58 @@ int main(void){
 
     // calculations for each garden location:
     //       Veggie patch:     PF = 1.0, LA = 96 sq. ft
-    veggie = (total_eto * 1.0 * 96) - effective_precipitation;
-    if (veggie <= 0) { 
-        veggie = 0; 
+    veggie = (total_eto * 1.0 * 96.0) - effective_precipitation;
+    if (veggie <= 0.0) { 
+        veggie = 0.0; 
         printf("veggie should be watered!\n");
     } else {
         printf("veggie remaining water %f (inches of water)\n", veggie);
     }
 
     //       Backyard:         PF = 0.5, LA = 300? sq. ft
-    backyard = (total_eto * 0.5 * 300) - effective_precipitation;
-    if (backyard <= 0) { 
-        backyard = 0; 
+    backyard = (total_eto * 0.5 * 300.0) - effective_precipitation;
+    if (backyard <= 0.0) { 
+        backyard = 0.0; 
         printf("backyard should be watered!\n");
     } else {
         printf("backyard remaining water %f (inches of water)\n", backyard);
     }
 
     //       Inside Side Yard: PF = 0.5?, LA = 64? sq. ft
-    inside = (total_eto * 0.5 * 64) - effective_precipitation;
-    if (inside <= 0) { 
-        inside = 0; 
+    inside = (total_eto * 0.5 * 64.0) - effective_precipitation;
+    if (inside <= 0.0) { 
+        inside = 0.0; 
         printf("inside should be watered!\n");
     } else {
         printf("inside remaining water %f (inches of water)\n", inside);
     }
 
     //       Berry Patch:      PF = 0.8?, LA = 64? sq. ft
-    berry = (total_eto * 0.8 * 64) - effective_precipitation;
-    if (berry <= 0) { 
-        berry = 0;
+    berry = (total_eto * 0.8 * 64.0) - effective_precipitation;
+    if (berry <= 0.0) { 
+        berry = 0.0;
         printf("berry should be watered!\n");
     } else {
         printf("berry remaining water %f (inches of water)\n", berry);
     }
 
     //       Native Front:     PF = 0.3?, LA = 32? sq. ft
-    front = (total_eto * 0.3 * 32) - effective_precipitation;
-    if (front <= 0) { 
-        front = 0; 
+    front = (total_eto * 0.3 * 32.0) - effective_precipitation;
+    if (front <= 0.0) { 
+        front = 0.0; 
         printf("front should be watered!\n");
     } else {
         printf("front remaining water %f (inches of water)\n", front);
     }
 
     //       Grape:            PF = 0.5?, LA = 8 sq. ft
-    grape = (total_eto * 0.5 * 8) - effective_precipitation;
-    if (grape <= 0) { 
-        grape = 0; 
+    grape = (total_eto * 0.5 * 8.0) - effective_precipitation;
+    if (grape <= 0.0) { 
+        grape = 0.0; 
         printf("grape should be watered!\n");
     }  else {
         printf("grape remaining water %f (inches of water)\n", grape);
     }
-
 
     json_decref(root);
     free(file_name); // deallocate the file_name string
